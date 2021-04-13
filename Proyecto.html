@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Proyecto</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<link rel="shortcut icon" href="#">
+        <script src= './js/keyboard.js'> </script>
+		<script src='js/stats.min.js'></script>
+		<script src="js/dat.gui.min.js"></script>
+        
+	</head>
+    
+	<body>
+
+
+		<script type="module">
+
+			import * as THREE from './three/build/three.module.js';
+
+			import { BoxLineGeometry } from './three/examples/jsm/geometries/BoxLineGeometry.js';
+			import { VRButton } from './three/examples/jsm/webxr/VRButton.js';
+			import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js'
+			import {  RGBELoader } from './three/examples/jsm/loaders/RGBELoader.js';
+			
+
+			const clock = new THREE.Clock();
+			
+			
+			let container;
+			let camera, topCamera, scene, raycaster, renderer, stats, mainMover, deltaTime, totalTime;
+			var keyboard;
+			var sunObject, mercuryObject, venusObject, earthObject,center;
+			var pointer;
+            const user = new THREE.Object3D();
+			let room;
+
+			let INTERSECTED;
+			const tempMatrix = new THREE.Matrix4();
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf0f0f0 );
+
+                //scene.add(user);
+				raycaster = new THREE.Raycaster();
+  				pointer = new THREE.Vector2()
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 50 );
+				camera.position.set( 0, -2.5, 5 );
+                //camera.lookAt(scene.position);
+				scene.add( camera );
+                
+                //topCamera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
+                //user.add(topCamera);
+                //topCamera.lookAt(scene.position);
+                //scene.add( topCamera );
+
+				/* room = new THREE.LineSegments(
+					new BoxLineGeometry( 6, 6, 6, 10, 10, 10 ).translate( 0, 3, 0 ),
+					new THREE.LineBasicMaterial( { color: 0x808080 } )
+				);
+				scene.add( room ); */
+                //var keyboard = new Keyboard();
+				deltaTime = 0;
+				totalTime = 0;
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+
+                let loader = new THREE.TextureLoader();
+                let universe = [
+					new THREE.MeshBasicMaterial( { map: loader.load("images/Right.png"), side: THREE.DoubleSide } ),
+					new THREE.MeshBasicMaterial( { map: loader.load("images/Left.png"), side: THREE.DoubleSide } ),
+					new THREE.MeshBasicMaterial( { map: loader.load("images/Top.png"), side: THREE.DoubleSide } ),
+					new THREE.MeshBasicMaterial( { map: loader.load("images/Front.png"), side: THREE.DoubleSide } ),
+					new THREE.MeshBasicMaterial( { map: loader.load("images/Back.png"), side: THREE.DoubleSide } ),
+					new THREE.MeshBasicMaterial( { map: loader.load("images/Bottom.png"), side: THREE.DoubleSide } ),
+				];
+				let sun = new THREE.MeshBasicMaterial({map: loader.load("images/sun.png"), side: THREE.BackSide})
+				
+                let room = new THREE.Mesh(
+                    new THREE.BoxGeometry(15,15,15),
+                    universe );
+				room.position.x = 0;
+				room.position.y = 0;
+				room.position.z = 0;
+                scene.add(room);
+                
+				//scene.add( new THREE.HemisphereLight( 0x606060, 0x404040 ) );
+                
+				const light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 1, 1, 1 ).normalize();
+				//scene.add( light );
+
+				let defaultMaterial = new THREE.MeshBasicMaterial({
+					map: loader.load("images/sphere-colored.png"), 
+					color: 0x444444,
+					side: THREE.DoubleSide,
+					transparent: true
+				});
+
+				const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+                var geometry = new THREE.SphereGeometry( 1, 32, 32 );
+                sunObject = new THREE.Mesh( geometry, sun );
+                sunObject.position.x = 0;
+                sunObject.position.y = 0;
+                sunObject.position.z = 0;
+				scene.add(sunObject);
+
+				var sphereCenter = new THREE.SphereGeometry(0.1, 2,2);
+				center = new THREE.Mesh(sphereCenter, defaultMaterial);
+				center.position.x = 0;
+				center.position.y = 0;
+				center.position.z = 0;
+				
+                var geometry1 = new THREE.SphereGeometry( 0.5, 32, 32 );
+				mercuryObject = new THREE.Mesh(geometry1, defaultMaterial);
+				mercuryObject.position.x = 2;
+				mercuryObject.position.y = 0;
+				mercuryObject.position.z = 0;
+				//center.add(mercuryObject);
+				scene.add(mercuryObject);
+				//scene.add(sunObject);
+
+	
+                
+				
+				//object.userData.velocity = new THREE.Vector3();
+			    //object.userData.velocity.x = Math.random() * 0.01 - 0.005;
+				//object.rotation.x += 0.01;
+				//user.add(object);
+				/* const geometry = new THREE.BoxGeometry( 0.15, 0.15, 0.15 );
+
+				for ( let i = 0; i < 200; i ++ ) {
+
+					const object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
+
+					object.position.x = Math.random() * 4 - 2;
+					object.position.y = Math.random() * 4;
+					object.position.z = Math.random() * 4 - 2;
+
+					object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y = Math.random() * 2 * Math.PI;
+					object.rotation.z = Math.random() * 2 * Math.PI;
+
+					object.scale.x = Math.random() + 0.5;
+					object.scale.y = Math.random() + 0.5;
+					object.scale.z = Math.random() + 0.5;
+
+					object.userData.velocity = new THREE.Vector3();
+					object.userData.velocity.x = Math.random() * 0.01 - 0.005;
+					object.userData.velocity.y = Math.random() * 0.01 - 0.005;
+					object.userData.velocity.z = Math.random() * 0.01 - 0.005;
+
+					room.add( object );
+					
+				} */
+                
+                keyboard = new Keyboard();
+				
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputEncoding = THREE.sRGBEncoding;
+                //container.appendChild( renderer.domElement );
+				renderer.xr.enabled = true;
+				container.appendChild( renderer.domElement );
+
+				//
+
+				
+				let mainCameraMesh = new THREE.Mesh( 
+					new THREE.BoxGeometry(1,1,1), 
+					new THREE.MeshBasicMaterial({
+						color: 0xff00ff
+					}) 
+				);
+				mainMover = new THREE.Object3D();
+				mainMover.position.set(0, 3, 0);
+				mainMover.add( camera );
+				//mainMover.add( mainCameraMesh );
+				scene.add( mainMover );
+
+				window.addEventListener( 'resize', onWindowResize );
+
+				//
+				//var controls = new OrbitControls( camera, renderer.domElement );
+				document.addEventListener( 'mousemove', onPointerMove );
+				document.body.appendChild( VRButton.createButton( renderer ) );
+
+                
+			}
+			
+			function onPointerMove( event ) {
+
+			pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+			}
+			var r =2;
+            function update()
+            {
+                stats.update();
+                keyboard.update();
+               
+                sunObject.rotation.y += 0.01;
+				mercuryObject.rotation.y += 0.01;
+				//mercuryObject.position.x =  r*Math.cos(renderer.info.render.frame * 0.01);
+				//mercuryObject.position.z =  r*Math.sin(renderer.info.render.frame * 0.01);
+				//planeta2.position.x =  -(r2*Math.cos(renderer.info.render.frame * 0.001));
+				//planeta2.position.z =  -(r2*Math.sin(renderer.info.render.frame * 0.001));
+				//center.rotation.y += 0.01;
+				//mercuryObject.rotateX.y +=0.21;
+				//sunObject.position.z += 0.01;
+				camera.updateMatrixWorld();
+				raycaster.setFromCamera( pointer, camera );
+
+				const intersects = raycaster.intersectObjects( scene.children);
+				
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+			
+						//if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+						//if ( INTERSECTED ) INTERSECTED.position.x = 0;
+						INTERSECTED = intersects[ 0 ].object;
+						//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+						//INTERSECTED.material.emissive.setHex( 0xff0000 );
+						if ( INTERSECTED ) {INTERSECTED.position.x = 0;
+						console.log("hola");}
+						console.log(intersects[0].object);
+
+					}
+
+				} 
+				else {
+
+					if ( INTERSECTED ) INTERSECTED.position.x = 0;
+
+					INTERSECTED = null;
+
+				}
+
+                let translateSpeed = 4.5; // units per second
+                let distance = translateSpeed * deltaTime;
+                let rotateSpeed = Math.PI/3; // radians per second
+                let angle = rotateSpeed * deltaTime;
+                
+                if (keyboard.isKeyPressed("W"))
+                    mainMover.translateZ( -distance );
+                if (keyboard.isKeyPressed("S"))
+                    mainMover.translateZ( distance );
+                    
+                if (keyboard.isKeyPressed("A"))
+                    mainMover.translateX( -distance );
+                if (keyboard.isKeyPressed("D"))
+                    mainMover.translateX( distance );
+                    
+                if (keyboard.isKeyPressed("R"))
+                    mainMover.translateY( distance );
+                if (keyboard.isKeyPressed("F"))
+                    mainMover.translateY( -distance );
+                    
+                if (keyboard.isKeyPressed("Q"))
+                    mainMover.rotateY( angle );
+                if (keyboard.isKeyPressed("E"))
+                    mainMover.rotateY( -angle );
+                    
+                if (keyboard.isKeyPressed("T"))
+                    mainMover.rotateX( angle );
+                if (keyboard.isKeyPressed("G"))
+                    mainMover.rotateX( -angle );
+                
+                
+            }
+            
+			
+            
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+				
+				renderer.setAnimationLoop( render );
+			}
+
+			function render() {
+
+				
+				//stats.update();
+				deltaTime = clock.getDelta();
+				totalTime += deltaTime;
+				update();
+				renderer.render( scene, camera );   
+
+			}
+			
+            
+
+		</script>
+	</body>
+</html>
