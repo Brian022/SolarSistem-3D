@@ -165,14 +165,14 @@
 				earthObject = new THREE.Mesh(geometry1, earth);
 				earthObject.position.x = 6;
 				earthObject.position.y = 0;
-				earthObject.position.z = 0;
+				earthObject.position.z = 4;
 				scene.add(earthObject);
 
 				var geometrymoon = new THREE.SphereGeometry( 0.10, 32, 32 );
 				moonObject = new THREE.Mesh(geometrymoon, moon);
 				moonObject.position.x = 6;
 				moonObject.position.y = 0;
-				moonObject.position.z = 0;
+				moonObject.position.z = 4;
 				scene.add(moonObject);
                 
 				
@@ -327,7 +327,7 @@
 				else {
 
 					//if ( INTERSECTED ) INTERSECTED.position.x = 0;
-
+					
 					INTERSECTED = null;
 
 				}
