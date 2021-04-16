@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 	<head>
 		<title>Proyecto</title>
 		<meta charset="utf-8">
@@ -8,7 +8,14 @@
         <script src= './js/keyboard.js'> </script>
 		<script src='js/stats.min.js'></script>
 		<script src="js/dat.gui.min.js"></script>
-        
+        <style>
+			.label {
+				color: #FFF;
+				font-family: sans-serif;
+				padding: 2px;
+				background: rgba( 0, 0, 0, .6 );
+			}
+		</style>
 	</head>
     
 	<body>
@@ -21,6 +28,7 @@
 			import { BoxLineGeometry } from './three/examples/jsm/geometries/BoxLineGeometry.js';
 			import { VRButton } from './three/examples/jsm/webxr/VRButton.js';
 			import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js'
+			import { CSS2DRenderer, CSS2DObject } from './three/examples/jsm/renderers/CSS2DRenderer.js';
 			//import {  RGBELoader } from './three/examples/jsm/loaders/RGBELoader.js';
 			
 
@@ -28,16 +36,22 @@
 			
 			
 			let container;
-			let camera, topCamera, scene, raycaster, renderer, stats, mainMover, deltaTime, totalTime;
+			let camera, topCamera, scene, raycaster, renderer, stats, mainMover, deltaTime, totalTime, labelRenderer;
 			var keyboard;
-			var sunObject, mercuryObject, venusObject, earthObject, moonObject;
+			var sunObject, mercuryObject, venusObject, earthObject, moonObject, object;
 			var pointer;
+			const group = new THREE.Group();
             const user = new THREE.Object3D();
 			let room;
-			const spotLight = new THREE.PointLight( 0xffffff,1, 500);
-			//const helper = new THREE.DirectionalLightHelper(spotLight);
+			const spotLight = new THREE.PointLight( 0xffffff,1, 20);
+			//const helper = new THREE.PointLightHelper(spotLight,1);
 			let INTERSECTED;
 			const tempMatrix = new THREE.Matrix4();
+			const moonDiv = document.createElement( 'div' );
+			moonDiv.className = 'label';
+			moonDiv.textContent = 'Moon';
+			moonDiv.style.marginTop = '-1em';
+			const moonLabel = new CSS2DObject( moonDiv );
 
 			init();
 			animate();
@@ -48,77 +62,42 @@
 				// invert the geometry on the x-axis so that all of the faces point inward
 				geometry23.scale( - 1, 1, 1 );
 				const texture = new THREE.TextureLoader().load('./images/universe.png');
-				const fondo = new THREE.MeshBasicMaterial({map: texture});
-				const mesh = new THREE.Mesh( geometry23, fondo );
+				const mesh = new THREE.MeshBasicMaterial({map: texture});
+				const fondo = new THREE.Mesh( geometry23, mesh );
 
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
 				scene = new THREE.Scene();
 				//scene.background = new THREE.Color( 0xf0f0f0 );
-				scene.add(mesh);
+				scene.add(fondo);
                 //scene.add(user);
 				raycaster = new THREE.Raycaster();
   				pointer = new THREE.Vector2()
 
-				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 2000 );
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 2000 );
 				camera.position.set( 0, -2.5, 10 );
                 //camera.lookAt(scene.position);
 				scene.add( camera );
 
-                //topCamera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
-                //user.add(topCamera);
-                //topCamera.lookAt(scene.position);
-                //scene.add( topCamera );
-
-				/* room = new THREE.LineSegments(
-					new BoxLineGeometry( 6, 6, 6, 10, 10, 10 ).translate( 0, 3, 0 ),
-					new THREE.LineBasicMaterial( { color: 0x808080 } )
-				);
-				scene.add( room ); */
-                //var keyboard = new Keyboard();
+				spotLight.position.set(0,0,0);
+				scene.add(spotLight);
+				
+				//scene.add(helper);
+                
 				deltaTime = 0;
 				totalTime = 0;
 				stats = new Stats();
 				document.body.appendChild( stats.dom );
 
                 let loader = new THREE.TextureLoader();
-				/*
-                let universe = [
-					new THREE.MeshBasicMaterial( { map: loader.load("images/Right.png"), side: THREE.DoubleSide } ),
-					new THREE.MeshBasicMaterial( { map: loader.load("images/Left.png"), side: THREE.DoubleSide } ),
-					new THREE.MeshBasicMaterial( { map: loader.load("images/Top.png"), side: THREE.DoubleSide } ),
-					new THREE.MeshBasicMaterial( { map: loader.load("images/Front.png"), side: THREE.DoubleSide } ),
-					new THREE.MeshBasicMaterial( { map: loader.load("images/Back.png"), side: THREE.DoubleSide } ),
-					new THREE.MeshBasicMaterial( { map: loader.load("images/Bottom.png"), side: THREE.DoubleSide } ),
-				];
-				let sun = new THREE.MeshBasicMaterial({map: loader.load("images/sun.png"), side: THREE.BackSide})
-				
-                let room = new THREE.Mesh(
-                    new THREE.BoxGeometry(15,15,15),
-                    universe );
-				room.position.x = 0;
-				room.position.y = 0;
-				room.position.z = 0;
-                scene.add(room); */
 
                 let sun = new THREE.MeshPhongMaterial({map: loader.load("images/sun.png"), side: THREE.BackSide})
-				let mercury = new THREE.MeshPhongMaterial({map: loader.load("images/mercury.png"), side: THREE.BackSide})
-				let venus = new THREE.MeshPhongMaterial({map: loader.load("images/venus.png"), side: THREE.BackSide})
-				let earth = new THREE.MeshPhongMaterial({map: loader.load("images/earth.png"), side: THREE.BackSide})
-				let moon = new THREE.MeshPhongMaterial({map: loader.load("images/moon.png"), side: THREE.BackSide})
+				let mercury = new THREE.MeshPhongMaterial({map: loader.load("images/mercury.png"), side: THREE.DoubleSide})
+				let venus = new THREE.MeshPhongMaterial({map: loader.load("images/venus.png"), side: THREE.DoubleSide})
+				let earth = new THREE.MeshPhongMaterial({map: loader.load("images/earth.png"), side: THREE.DoubleSide})
+				let moon = new THREE.MeshPhongMaterial({map: loader.load("images/moon.png"), side: THREE.DoubleSide})
 				
-				
-				//spotLight.position.set( 0, 0, 0 );        
-				//spotLight.target.position.set(-5, 0, 0);
-				//scene.add( spotLight );
-				//scene.add(spotLight.target);
-
-				spotLight.position.set(0,0,0);
-				scene.add(spotLight);
-				
-				//scene.add(helper);
-
 				 
 
 				let luz = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
@@ -153,7 +132,12 @@
 				mercuryObject.position.y = 0;
 				mercuryObject.position.z = 0;
 				scene.add(mercuryObject);
+
 				
+
+				
+				moonLabel.position.set( 0, 0, 0 );
+				//mercuryObject.add( moonLabel );
 
 				//var geometry1 = new THREE.SphereGeometry( 0.5, 32, 32 );
 				venusObject = new THREE.Mesh(geometry1, venus);
@@ -175,41 +159,6 @@
 				moonObject.position.z = 4;
 				scene.add(moonObject);
                 
-				
-				//object.userData.velocity = new THREE.Vector3();
-			    //object.userData.velocity.x = Math.random() * 0.01 - 0.005;
-				//object.rotation.x += 0.01;
-				//user.add(object);
-				/* const geometry = new THREE.BoxGeometry( 0.15, 0.15, 0.15 );
-
-				for ( let i = 0; i < 200; i ++ ) {
-
-					const object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
-
-					object.position.x = Math.random() * 4 - 2;
-					object.position.y = Math.random() * 4;
-					object.position.z = Math.random() * 4 - 2;
-
-					object.rotation.x = Math.random() * 2 * Math.PI;
-					object.rotation.y = Math.random() * 2 * Math.PI;
-					object.rotation.z = Math.random() * 2 * Math.PI;
-
-					object.scale.x = Math.random() + 0.5;
-					object.scale.y = Math.random() + 0.5;
-					object.scale.z = Math.random() + 0.5;
-
-					object.userData.velocity = new THREE.Vector3();
-					object.userData.velocity.x = Math.random() * 0.01 - 0.005;
-					object.userData.velocity.y = Math.random() * 0.01 - 0.005;
-					object.userData.velocity.z = Math.random() * 0.01 - 0.005;
-
-					room.add( object );
-					
-				} */
-                
-                keyboard = new Keyboard();
-				
-
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -217,6 +166,50 @@
                 //container.appendChild( renderer.domElement );
 				renderer.xr.enabled = true;
 				container.appendChild( renderer.domElement );
+
+				
+
+				//const meteoros = new THREE.SphereGeometry( 0.5, 32, 32 );
+				const meteoros = new THREE.SphereGeometry( 0.5, 16, 32 );
+				var num = 0.01;
+				for ( let i = 0; i < 50; i ++ ) {
+
+					const object = new THREE.Mesh( meteoros, new THREE.MeshPhongMaterial( { color: Math.random() * 0xffffff } ) );
+					var pos = Math.random() * (10 - 8) + 8;
+					object.position.x = Math.random() < 0.5 ? -pos*Math.sin(num) :  pos*Math.sin(num);
+					object.position.y = 0;
+					object.position.z = Math.random() < 0.5 ? -pos*Math.cos(num) : pos*Math.cos(num);
+					num = num +1.5;
+					//10*Math.cos(Math.random()*(10-8));
+					//Math.random() * (max - min) + min;
+					//venusObject.position.x =  4*Math.sin(renderer.info.render.frame * 0.01);
+					var velo = Math.random(0.90)/100;
+					//object.rotation.x = Math.random() * 2 * Math.PI;
+					object.rotation.y += velo;
+					//object.rotation.z = Math.random() * 2 * Math.PI;
+
+					//object.scale.x = Math.random() + 0.5;
+					//object.scale.y = Math.random() + 0.5;
+					//object.scale.z = Math.random() + 0.5;
+					
+					//object.userData.velocity = new THREE.Vector3();
+					//object.userData.velocity.x = Math.random() * (-10+ 8) - 8;
+					//object.userData.velocity.y = Math.random() * 0.01 - 0.005;
+					//object.userData.velocity.z = Math.random() * (-10+ 8) - 8;
+
+					group.add( object );
+					
+					//console.log(fondo.children[ i ]);
+
+					//Math.random() * (max - min) + min;
+					//venusObject.position.x =  4*Math.sin(renderer.info.render.frame * 0.01);
+					
+				} 
+                
+                keyboard = new Keyboard();
+				sunObject.add(group);
+				scene.add(group);
+				
 
 				//
 
@@ -229,24 +222,35 @@
 				);
 				mainMover = new THREE.Object3D();
 				mainMover.position.set(0, 3, 0);
-				mainMover.add( camera );
+				//mainMover.add( camera );
 				//mainMover.add( mainCameraMesh );
-				scene.add( mainMover );
+				//scene.add( mainMover );
 
 				window.addEventListener( 'resize', onWindowResize );
 
 				//
-				var controls = new OrbitControls( camera, renderer.domElement );
+				
 				document.addEventListener( 'mousemove', onPointerMove );
 				document.body.appendChild( VRButton.createButton( renderer ) );
 
+				labelRenderer = new CSS2DRenderer();
+				labelRenderer.setSize( window.innerWidth, window.innerHeight );
+				labelRenderer.domElement.style.position = 'absolute';
+				labelRenderer.domElement.style.top = '0px';
+				document.body.appendChild( labelRenderer.domElement );
+				
+				//LabelRenderer nos da como otra capa de render es por eso que usamos esta manera
+				var controls = new OrbitControls( camera, labelRenderer.domElement );
                 
 			}
-			/*
+
 			function updateLight() {
-					spotLight.target.updateMatrixWorld();
-					helper.update();
-			}*/
+				//spotLight.updateMatrix();
+				//spotLight.matrixAutoUpdate();
+				//spotLight.updateProjectionMatrix = true;
+				spotLight.updateMatrixWorld();
+			}
+			
 				 
 			function onPointerMove( event ) {
 
@@ -267,8 +271,7 @@
             function update()
             {
                 stats.update();
-                
-               
+			
                 sunObject.rotation.y += 0.01;
 				mercuryObject.rotation.y += 0.01;
 				venusObject.rotation.y += 0.01;
@@ -283,18 +286,33 @@
 				earthObject.position.x =  6*Math.sin(renderer.info.render.frame * 0.001);
 				earthObject.position.z =  6*Math.cos(renderer.info.render.frame * 0.001);
 
-				moonObject.position.x =  6*Math.sin(renderer.info.render.frame * 0.001);
-				moonObject.position.z =  6*Math.cos(renderer.info.render.frame * 0.001);
+				moonObject.position.x =  6.5*Math.sin(renderer.info.render.frame * 0.001);
+				moonObject.position.z =  6.5*Math.cos(renderer.info.render.frame * 0.001);
 
 				//planeta2.position.x =  -(r2*Math.cos(renderer.info.render.frame * 0.001));
 				//planeta2.position.z =  -(r2*Math.sin(renderer.info.render.frame * 0.001));
-				//center.rotation.y += 0.01;
-				//mercuryObject.rotateX.y +=0.21;
-				//sunObject.position.z += 0.01;
-				//spotLight.target.position.x = 4*Math.sin(renderer.info.render.frame * 0.01);
-				//spotLight.target.position.z = 4*Math.cos(renderer.info.render.frame * 0.01);
-				//updateLight();
+				group.rotateY(0.001);
+				
+				/*
+				for (let i = 0; i < group.children.length; i++) {
+					var element = group.children[i];
+					element.rotation.y += 0.01;
+					//element.position.x = Math.random() * (10- 8) + 8;
+					element.position.y = 0;
+					//element.position.z = Math.random() * (10 - 8) + 8;
+					//var qchau = Math.random(0.90)/1000 ;
+					var pos = Math.random() * (10 - 8) + 8;
+					//console.log(pos);
+					var posx = element.position.x;
+					var posz = element.position.z;
+
+					element.position.x = posz*Math.sin(renderer.info.render.frame * 0.001);
+					element.position.z = posz*Math.cos(renderer.info.render.frame * 0.001);
+				}*/
+				
+				updateLight();
 				camera.updateMatrixWorld();
+				camera.updateProjectionMatrix();
 				raycaster.setFromCamera( pointer, camera );
 
 				const intersects = raycaster.intersectObjects( scene.children);
@@ -303,9 +321,17 @@
 
 					if ( INTERSECTED != intersects[ 0 ].object ) {
 			
-						//if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+						if ( INTERSECTED ){
+							INTERSECTED.remove( moonLabel );
+							console.log("asd1");
+						}
+							
 						//if ( INTERSECTED ) INTERSECTED.position.x = 0;
 						INTERSECTED = intersects[ 0 ].object;
+						if(INTERSECTED == sunObject)
+							INTERSECTED.add( moonLabel );
+						if(INTERSECTED == mercuryObject)
+							INTERSECTED.add( moonLabel );
 						//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
 						//INTERSECTED.material.emissive.setHex( 0xff0000 );
 						/*if ( INTERSECTED ) {
@@ -319,20 +345,24 @@
 							}
 							//console.log(INTERSECTED.id);
 						}*/
-						console.log(intersects[0].object);
+						//console.log("solcito");
+						//console.log(intersects[0].object);
 
 					}
 
 				} 
 				else {
 
-					//if ( INTERSECTED ) INTERSECTED.position.x = 0;
-					
+					if ( INTERSECTED ){
+						INTERSECTED.remove( moonLabel );
+						console.log("asd");
+					}
+
 					INTERSECTED = null;
 
 				}
-				/*
-				//keyboard.update();
+				
+				keyboard.update();
                 let translateSpeed = 4.5; // units per second
                 let distance = translateSpeed * deltaTime;
                 let rotateSpeed = Math.PI/3; // radians per second
@@ -362,7 +392,7 @@
                     mainMover.rotateX( angle );
                 if (keyboard.isKeyPressed("G"))
                     mainMover.rotateX( -angle );
-                */
+                
                 
             }
             
@@ -387,11 +417,13 @@
 			function render() {
 
 				
-				//stats.update();
+				stats.update();
 				deltaTime = clock.getDelta();
 				totalTime += deltaTime;
 				update();
-				renderer.render( scene, camera );   
+				
+				renderer.render( scene, camera ); 
+				labelRenderer.render( scene, camera );  
 
 			}
 			
