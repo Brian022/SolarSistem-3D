@@ -87,6 +87,8 @@
                 
 				deltaTime = 0;
 				totalTime = 0;
+
+				keyboard = new Keyboard();
 				stats = new Stats();
 				document.body.appendChild( stats.dom );
 
@@ -102,7 +104,7 @@
 
 				let luz = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
 				luz.position.set(0,0,0);
-				scene.add( luz );
+				// scene.add( luz );
                 
 				//const light = new THREE.DirectionalLight( 0xffffff );
 				//light.position.set( 1, 1, 1 ).normalize();
@@ -133,9 +135,7 @@
 				mercuryObject.position.z = 0;
 				scene.add(mercuryObject);
 
-				
 
-				
 				moonLabel.position.set( 0, 0, 0 );
 				//mercuryObject.add( moonLabel );
 
@@ -168,13 +168,17 @@
 				container.appendChild( renderer.domElement );
 
 				
-
+				var metes=["./images/roca.jpg","./images/meteoro.jpg", "./images/meteoro2.jpg","./images/meteoro3.jpg"]
 				//const meteoros = new THREE.SphereGeometry( 0.5, 32, 32 );
-				const meteoros = new THREE.SphereGeometry( 0.5, 16, 32 );
+				
 				var num = 0.01;
-				for ( let i = 0; i < 50; i ++ ) {
-
-					const object = new THREE.Mesh( meteoros, new THREE.MeshPhongMaterial( { color: Math.random() * 0xffffff } ) );
+				for ( let i = 0; i < 300; i ++ ) {
+					var tam= Math.random()*0.2;
+					var tam2= Math.random() * (32 -16) + 16;
+					var tam3= Math.random() * (12 -6) + 6;
+					const meteoros = new THREE.SphereGeometry( tam, tam2, tam3 );
+					const texturamdom = Math.floor(Math.random() * metes.length);
+					const object = new THREE.Mesh( meteoros, new THREE.MeshPhongMaterial({map: loader.load(metes[texturamdom]), side: THREE.DoubleSide} ) );
 					var pos = Math.random() * (10 - 8) + 8;
 					object.position.x = Math.random() < 0.5 ? -pos*Math.sin(num) :  pos*Math.sin(num);
 					object.position.y = 0;
@@ -206,7 +210,7 @@
 					
 				} 
                 
-                keyboard = new Keyboard();
+                
 				sunObject.add(group);
 				scene.add(group);
 				
@@ -222,9 +226,9 @@
 				);
 				mainMover = new THREE.Object3D();
 				mainMover.position.set(0, 3, 0);
-				//mainMover.add( camera );
-				//mainMover.add( mainCameraMesh );
-				//scene.add( mainMover );
+				mainMover.add( camera );
+				// mainMover.add( mainCameraMesh );
+				scene.add( mainMover );
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -271,7 +275,9 @@
             function update()
             {
                 stats.update();
-			
+				keyboard.update();
+
+				
                 sunObject.rotation.y += 0.01;
 				mercuryObject.rotation.y += 0.01;
 				venusObject.rotation.y += 0.01;
@@ -286,8 +292,8 @@
 				earthObject.position.x =  6*Math.sin(renderer.info.render.frame * 0.001);
 				earthObject.position.z =  6*Math.cos(renderer.info.render.frame * 0.001);
 
-				moonObject.position.x =  6.5*Math.sin(renderer.info.render.frame * 0.001);
-				moonObject.position.z =  6.5*Math.cos(renderer.info.render.frame * 0.001);
+				moonObject.position.x =  6.8*Math.sin(renderer.info.render.frame * 0.001);
+				moonObject.position.z =  6.8*Math.cos(renderer.info.render.frame * 0.001);
 
 				//planeta2.position.x =  -(r2*Math.cos(renderer.info.render.frame * 0.001));
 				//planeta2.position.z =  -(r2*Math.sin(renderer.info.render.frame * 0.001));
@@ -362,7 +368,7 @@
 
 				}
 				
-				keyboard.update();
+				
                 let translateSpeed = 4.5; // units per second
                 let distance = translateSpeed * deltaTime;
                 let rotateSpeed = Math.PI/3; // radians per second
