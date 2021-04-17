@@ -9,11 +9,11 @@
 		<script src='js/stats.min.js'></script>
         <style>
 			.label {
-				color: #FFF;
+				color: rgb(255, 255, 255);
 				font-family: sans-serif;
 				padding: 2px;
 				font-size: small;
-				background: rgba( 0, 0, 0, .6 );
+				background: rgba(116, 7, 7, 0.6);
 			}
 		</style>
 	</head>
@@ -24,11 +24,12 @@
 		<script type="module">
 
 			import * as THREE from './three/build/three.module.js';
-			// import { BoxLineGeometry } from './three/examples/jsm/geometries/BoxLineGeometry.js';
+
+			
 			import { VRButton } from './three/examples/jsm/webxr/VRButton.js';
 			import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js'
 			import { CSS2DRenderer, CSS2DObject } from './three/examples/jsm/renderers/CSS2DRenderer.js';
-			//import {  RGBELoader } from './three/examples/jsm/loaders/RGBELoader.js';
+			
 			
 
 			const clock = new THREE.Clock();
@@ -38,15 +39,13 @@
 			let camera, topCamera, scene, raycaster, renderer, stats, mainMover, deltaTime, totalTime, labelRenderer;
 			var keyboard;
 			var sunObject, mercuryObject, venusObject, earthObject, moonObject, marsObject, object;
-			var pointer;
+			var pointer, controls;
+
 			const group = new THREE.Group();
-			const group1 = new THREE.Group();
             const user = new THREE.Object3D();
-			let room;
-			const spotLight = new THREE.PointLight( 0xffffff,1, 20);
-			//const helper = new THREE.PointLightHelper(spotLight,1);
+			const pointLight = new THREE.PointLight( 0xf0f0f0,2, 20);
 			let INTERSECTED;
-			const tempMatrix = new THREE.Matrix4();
+			
 
 			const moonDiv = document.createElement( 'div' );
 			moonDiv.className = 'label';
@@ -109,21 +108,21 @@
 				document.body.appendChild( container );
 
 				scene = new THREE.Scene();
-				//scene.background = new THREE.Color( 0xf0f0f0 );
+				
 				scene.add(fondo);
-                //scene.add(user);
+                
 				raycaster = new THREE.Raycaster();
   				pointer = new THREE.Vector2()
 
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.set( 0, -2.5, 10 );
-                //camera.lookAt(scene.position);
+				camera.position.set( 0, 4, 17 );
+                camera.lookAt(scene.position);
 				scene.add( camera );
 
-				spotLight.position.set(0,0,0);
-				scene.add(spotLight);
+				pointLight.position.set(0,0,0);
+				scene.add(pointLight);
 				
-				//scene.add(helper);
+				
                 
 				deltaTime = 0;
 				totalTime = 0;
@@ -139,16 +138,13 @@
 				let venus = new THREE.MeshPhongMaterial({map: loader.load("images/venus.png"), side: THREE.DoubleSide})
 				let earth = new THREE.MeshPhongMaterial({map: loader.load("images/earth.png"), side: THREE.DoubleSide})
 				let moon = new THREE.MeshPhongMaterial({map: loader.load("images/moon.png"), side: THREE.DoubleSide})
+				let mars = new THREE.MeshPhongMaterial({map: loader.load("images/mars.png"), side: THREE.DoubleSide})
 				
 				 
 
 				let luz = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
 				luz.position.set(0,0,0);
-				// scene.add( luz );
-                
-				//const light = new THREE.DirectionalLight( 0xffffff );
-				//light.position.set( 1, 1, 1 ).normalize();
-				//scene.add( light );
+				//scene.add( luz );
 
 				let defaultMaterial = new THREE.MeshBasicMaterial({
 					map: loader.load("images/sphere-colored.png"), 
@@ -157,36 +153,30 @@
 					transparent: true
 				});
 
-				const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-				//5
-                var geometry = new THREE.SphereGeometry( 1, 32, 32 );
-                sunObject = new THREE.Mesh( geometry, sun );
+				
+                var geometrySun = new THREE.SphereGeometry( 3, 32, 32 );
+                sunObject = new THREE.Mesh( geometrySun, sun );
                 sunObject.position.x = 0;
                 sunObject.position.y = 0;
                 sunObject.position.z = 0;
 				scene.add(sunObject);
 
-				
-				
-                var geometry1 = new THREE.SphereGeometry( 0.5, 32, 32 );
-				mercuryObject = new THREE.Mesh(geometry1, mercury);
+                var geometryMercury = new THREE.SphereGeometry( 0.2, 32, 32 );
+				mercuryObject = new THREE.Mesh(geometryMercury, mercury);
 				mercuryObject.position.x = 2;
 				mercuryObject.position.y = 0;
 				mercuryObject.position.z = 0;
 				scene.add(mercuryObject);
 
-
-				moonLabel.position.set( 0, 0, 0 );
-				//mercuryObject.add( moonLabel );
-
-				//var geometry1 = new THREE.SphereGeometry( 0.5, 32, 32 );
-				venusObject = new THREE.Mesh(geometry1, venus);
+				var geometryVenus = new THREE.SphereGeometry( 0.4, 32, 32 );
+				venusObject = new THREE.Mesh(geometryVenus, venus);
 				venusObject.position.x = 4;
 				venusObject.position.y = 0;
 				venusObject.position.z = 0;
 				scene.add(venusObject);
 
-				earthObject = new THREE.Mesh(geometry1, earth);
+				var geometryEarth = new THREE.SphereGeometry( 0.6, 32, 32 );
+				earthObject = new THREE.Mesh(geometryEarth, earth);
 				earthObject.position.x = 6;
 				earthObject.position.y = 0;
 				earthObject.position.z = 4;
@@ -199,7 +189,8 @@
 				moonObject.position.z = 4;
 				scene.add(moonObject);
 
-				marsObject = new THREE.Mesh(geometry1, earth);
+				var geometryMars = new THREE.SphereGeometry( 0.55, 32, 32 );
+				marsObject = new THREE.Mesh(geometryMars, mars);
 				marsObject.position.x = 6;
 				marsObject.position.y = 0;
 				marsObject.position.z = 0;
@@ -211,67 +202,39 @@
 				earthLabel.position.set( 0, 0, 0 );
 				moonLabel.position.set( 0, 0, 0 );
 				marsLabel.position.set( 0, 0, 0 );
-				
-				
                 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.outputEncoding = THREE.sRGBEncoding;
-                //container.appendChild( renderer.domElement );
-				renderer.xr.enabled = true;
-				container.appendChild( renderer.domElement );
-
 				
-				var metes=["./images/roca.jpg","./images/meteoro.jpg", "./images/meteoro2.jpg","./images/meteoro3.jpg"]
-				//const meteoros = new THREE.SphereGeometry( 0.5, 32, 32 );
+				var meteoritos=["./images/roca.jpg","./images/meteoro.jpg", "./images/meteoro2.jpg","./images/meteoro3.jpg"]
 				
 				var num = 0.01;
+
 				for ( let i = 0; i < 300; i ++ ) {
 					var tam= Math.random()*0.2;
 					var tam2= Math.random() * (32 -16) + 16;
 					var tam3= Math.random() * (12 -6) + 6;
+
 					const meteoros = new THREE.SphereGeometry( tam, tam2, tam3 );
-					const texturamdom = Math.floor(Math.random() * metes.length);
-					const object = new THREE.Mesh( meteoros, new THREE.MeshPhongMaterial({map: loader.load(metes[texturamdom]), side: THREE.DoubleSide} ) );
-					var pos = Math.random() * (10 - 8) + 8;
+					const texturamdom = Math.floor(Math.random() * meteoritos.length);
+
+					const object = new THREE.Mesh( meteoros, new THREE.MeshPhongMaterial({map: loader.load(meteoritos[texturamdom]), side: THREE.DoubleSide} ) );
+					
+					var pos = Math.random() * (20 - 15) + 15;
 					object.position.x = Math.random() < 0.5 ? -pos*Math.sin(num) :  pos*Math.sin(num);
 					object.position.y = 0;
 					object.position.z = Math.random() < 0.5 ? -pos*Math.cos(num) : pos*Math.cos(num);
 					num = num +1.5;
-					//10*Math.cos(Math.random()*(10-8));
-					//Math.random() * (max - min) + min;
-					//venusObject.position.x =  4*Math.sin(renderer.info.render.frame * 0.01);
-					var velo = Math.random(0.90)/100;
-					//object.rotation.x = Math.random() * 2 * Math.PI;
-					object.rotation.y += velo;
-					//object.rotation.z = Math.random() * 2 * Math.PI;
-
-					//object.scale.x = Math.random() + 0.5;
-					//object.scale.y = Math.random() + 0.5;
-					//object.scale.z = Math.random() + 0.5;
 					
-					//object.userData.velocity = new THREE.Vector3();
-					//object.userData.velocity.x = Math.random() * (-10+ 8) - 8;
-					//object.userData.velocity.y = Math.random() * 0.01 - 0.005;
-					//object.userData.velocity.z = Math.random() * (-10+ 8) - 8;
+					var velo = Math.random(0.90)/100;
+					
+					object.rotation.y += velo;
 
 					group.add( object );
 					
-					//console.log(fondo.children[ i ]);
-
-					//Math.random() * (max - min) + min;
-					//venusObject.position.x =  4*Math.sin(renderer.info.render.frame * 0.01);
-					
-				} 
+				}
                 
                 
 				sunObject.add(group);
 				scene.add(group);
-				
-
-				//
-
 				
 				let mainCameraMesh = new THREE.Mesh( 
 					new THREE.BoxGeometry(1,1,1), 
@@ -279,16 +242,19 @@
 						color: 0xff00ff
 					}) 
 				);
-				mainMover = new THREE.Object3D();
+				mainMover = new THREE.Group();
 				mainMover.position.set(0, 3, 0);
 				mainMover.add( camera );
-				// mainMover.add( mainCameraMesh );
 				scene.add( mainMover );
+				
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				renderer.xr.enabled = true;
+				container.appendChild( renderer.domElement )
 
 				window.addEventListener( 'resize', onWindowResize );
-
-				//
-				
 				document.addEventListener( 'mousemove', onPointerMove );
 				document.body.appendChild( VRButton.createButton( renderer ) );
 
@@ -299,12 +265,12 @@
 				document.body.appendChild( labelRenderer.domElement );
 				
 				//LabelRenderer nos da como otra capa de render es por eso que usamos esta manera
-				var controls = new OrbitControls( camera, labelRenderer.domElement );
+				controls = new OrbitControls( camera, labelRenderer.domElement );
                 
 			}
 
 			function updateLight() {
-				spotLight.updateMatrixWorld();
+				pointLight.updateMatrixWorld();
 			}
 				 
 			function onPointerMove( event ) {
@@ -318,27 +284,28 @@
             {
                 stats.update();
 				keyboard.update();
-
 				
                 sunObject.rotation.y += 0.01;
 				mercuryObject.rotation.y += 0.01;
 				venusObject.rotation.y += 0.01;
 				earthObject.rotation.y += 0.01;
 
-				mercuryObject.position.x =  -(2*Math.sin(renderer.info.render.frame * 0.01));
-				mercuryObject.position.z =  -(2*Math.cos(renderer.info.render.frame * 0.01));
+				mercuryObject.position.x =  -(4*Math.sin(renderer.info.render.frame * 0.01));
+				mercuryObject.position.z =  -(4*Math.cos(renderer.info.render.frame * 0.01));
 
-				venusObject.position.x =  4*Math.sin(renderer.info.render.frame * 0.03);
-				venusObject.position.z =  4*Math.cos(renderer.info.render.frame * 0.03);
+				venusObject.position.x =  6*Math.sin(renderer.info.render.frame * 0.003);
+				venusObject.position.z =  6*Math.cos(renderer.info.render.frame * 0.003);
 
-				earthObject.position.x =  6*Math.sin(renderer.info.render.frame * 0.001);
-				earthObject.position.z =  6*Math.cos(renderer.info.render.frame * 0.001);
+				earthObject.position.x =  8*Math.sin(renderer.info.render.frame * 0.001);
+				earthObject.position.z =  8*Math.cos(renderer.info.render.frame * 0.001);
 
-				moonObject.position.x =  6.8*Math.sin(renderer.info.render.frame * 0.001);
-				moonObject.position.z =  6.8*Math.cos(renderer.info.render.frame * 0.001);
+				moonObject.position.x =  8.8*Math.sin(renderer.info.render.frame * 0.001);
+				moonObject.position.z =  8.8*Math.cos(renderer.info.render.frame * 0.001);
+				
+				marsObject.position.x =  -(10.8*Math.sin(renderer.info.render.frame * 0.004));
+				marsObject.position.z =  -(10.8*Math.cos(renderer.info.render.frame * 0.004));
 
 				group.rotateY(0.001);
-				
 				
 				updateLight();
 				camera.updateMatrixWorld();
@@ -364,10 +331,9 @@
 								INTERSECTED.remove( moonLabel );
 							if(INTERSECTED == marsObject)
 								INTERSECTED.remove( marsLabel );
-							//console.log("asd1");
 						}
 							
-						//if ( INTERSECTED ) INTERSECTED.position.x = 0;
+						
 						INTERSECTED = intersects[ 0 ].object;
 						if(INTERSECTED == sunObject)
 							INTERSECTED.add( sunLabel );
@@ -381,24 +347,7 @@
 							INTERSECTED.add( moonLabel );
 						if(INTERSECTED == marsObject)
 							INTERSECTED.add( marsLabel );
-						//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-						//INTERSECTED.material.emissive.setHex( 0xff0000 );
-						/*if ( INTERSECTED ) {
-							if(INTERSECTED.id =0)
-							{
-								console.log("universe");
-							}
-							elseif(INTERSECTED.id = 12)
-							{
-								console.log("sol");
-							}
-							//console.log(INTERSECTED.id);
-						}*/
-						//console.log("solcito");
-						//console.log(intersects[0].object);
-
 					}
-					//INTERSECTED = intersects[ 0 ].object;
 
 				}
 				else {
@@ -422,10 +371,9 @@
 
 				}
 				
-				
-                let translateSpeed = 4.5; // units per second
+                let translateSpeed = 4.5; 
                 let distance = translateSpeed * deltaTime;
-                let rotateSpeed = Math.PI/3; // radians per second
+                let rotateSpeed = Math.PI/3; 
                 let angle = rotateSpeed * deltaTime;
                 
                 if (keyboard.isKeyPressed("W"))
@@ -477,7 +425,7 @@
 			function render() {
 
 				
-				//stats.update();
+				stats.update();
 				deltaTime = clock.getDelta();
 				totalTime += deltaTime;
 				update();
