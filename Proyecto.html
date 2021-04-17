@@ -38,12 +38,13 @@
 			let container;
 			let camera, topCamera, scene, raycaster, renderer, stats, mainMover, deltaTime, totalTime, labelRenderer;
 			var keyboard;
-			var sunObject, mercuryObject, venusObject, earthObject, moonObject, marsObject, object;
+			var sunObject, mercuryObject, venusObject, earthObject, moonObject, marsObject, jupiterObject, anillosObject, object;
+			var anillosObject2, saturnoObject, uranoObject, neptunoObject;
 			var pointer, controls;
 
 			const group = new THREE.Group();
             const user = new THREE.Object3D();
-			const pointLight = new THREE.PointLight( 0xf0f0f0,2, 20);
+			const pointLight = new THREE.PointLight( 0xf0f0f0,2, 80);
 			let INTERSECTED;
 			
 
@@ -83,6 +84,30 @@
 			marsDiv.textContent = 'Marte / AWQAKUQ\r\n Masa: 5.972 × 10^24 kg\r\n Gravedad: 3.721 m/s²';
 			marsDiv.style.marginTop = '-1em';
 
+			const jupiterDiv = document.createElement( 'div' );
+			jupiterDiv.className = 'label';
+			jupiterDiv.setAttribute('style', 'white-space: pre;');
+			jupiterDiv.textContent = 'Jupiter / PIRWA\r\n Masa: 1.898 × 10^27 kg\r\n Gravedad: 24.79 m/s²';
+			jupiterDiv.style.marginTop = '-1em';
+
+			const saturnoDiv = document.createElement( 'div' );
+			saturnoDiv.className = 'label';
+			saturnoDiv.setAttribute('style', 'white-space: pre;');
+			saturnoDiv.textContent = 'Saturno / HAWCHA\r\n Masa: 5.683 × 10^26 kg\r\n Gravedad: 10.44 m/s²';
+			saturnoDiv.style.marginTop = '-1em';
+
+			const uranoDiv = document.createElement( 'div' );
+			uranoDiv.className = 'label';
+			uranoDiv.setAttribute('style', 'white-space: pre;');
+			uranoDiv.textContent = 'Urano / RITI\r\n Masa: 8.681 × 10^25 kg \r\n Gravedad: 8.87 m/s²';
+			uranoDiv.style.marginTop = '-1em';
+
+			const neptunoDiv = document.createElement( 'div' );
+			neptunoDiv.className = 'label';
+			neptunoDiv.setAttribute('style', 'white-space: pre;');
+			neptunoDiv.textContent = 'Neptuno / TINKULLPA\r\n Masa: 1.024 × 10^26 kg\r\n Gravedad: 11.15 m/s²';
+			neptunoDiv.style.marginTop = '-1em';
+
 			
 			const moonLabel = new CSS2DObject( moonDiv );
 			const sunLabel = new CSS2DObject( sunDiv );
@@ -90,6 +115,11 @@
 			const venusLabel = new CSS2DObject( venusDiv );
 			const earthLabel = new CSS2DObject( earthDiv );
 			const marsLabel = new CSS2DObject( marsDiv );
+			const jupiterLabel = new CSS2DObject( jupiterDiv );
+			const saturnoLabel = new CSS2DObject( saturnoDiv );
+			const uranoLabel = new CSS2DObject( uranoDiv );
+			const neptunoLabel = new CSS2DObject( neptunoDiv );
+
 
 
 			init();
@@ -139,12 +169,17 @@
 				let earth = new THREE.MeshPhongMaterial({map: loader.load("images/earth.png"), side: THREE.DoubleSide})
 				let moon = new THREE.MeshPhongMaterial({map: loader.load("images/moon.png"), side: THREE.DoubleSide})
 				let mars = new THREE.MeshPhongMaterial({map: loader.load("images/mars.png"), side: THREE.DoubleSide})
+				let jupiter = new THREE.MeshPhongMaterial({map: loader.load("images/jupiter.png"), side: THREE.DoubleSide})
+				let saturno = new THREE.MeshPhongMaterial({map: loader.load("images/saturno.png"), side: THREE.DoubleSide})
+				let materialanillos = new THREE.MeshPhongMaterial( {map: loader.load("images/ring.png"), side: THREE.DoubleSide} );
+				let urano = new THREE.MeshPhongMaterial( {map: loader.load("images/urano.png"), side: THREE.DoubleSide} );
+				let neptuno = new THREE.MeshPhongMaterial( {map: loader.load("images/neptuno.png"), side: THREE.DoubleSide} );
 				
-				 
-
+				//let materialanillos = new THREE.MeshPhongMaterial( { color: 0xFFFFFF } );
+				
 				let luz = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1 );
 				luz.position.set(0,0,0);
-				//scene.add( luz );
+				scene.add( luz );
 
 				let defaultMaterial = new THREE.MeshBasicMaterial({
 					map: loader.load("images/sphere-colored.png"), 
@@ -196,6 +231,45 @@
 				marsObject.position.z = 0;
 				scene.add(marsObject);
 
+				var geometryJupiter = new THREE.SphereGeometry( 1.5, 32, 32 );
+				jupiterObject = new THREE.Mesh(geometryJupiter, jupiter);
+				jupiterObject.position.x = 12;
+				jupiterObject.position.y = 0;
+				jupiterObject.position.z = 0;
+				scene.add(jupiterObject);
+
+				var geometrySaturno = new THREE.SphereGeometry( 1.5, 32, 32 );
+				saturnoObject = new THREE.Mesh(geometrySaturno, saturno);
+				saturnoObject.position.x = 12;
+				saturnoObject.position.y = 0;
+				saturnoObject.position.z = 0;
+				scene.add(saturnoObject);
+
+				const geometryanillos = new THREE.TorusGeometry( 2, 0.3, 2, 200 );
+				anillosObject = new THREE.Mesh( geometryanillos, materialanillos );
+				anillosObject.rotateX(0.7);
+				scene.add( anillosObject );
+
+				const geometryanillos2 = new THREE.TorusGeometry( 2.6, 0.3, 2, 200 );
+				anillosObject2 = new THREE.Mesh( geometryanillos2, materialanillos );
+				anillosObject2.rotateX(0.7);
+				scene.add( anillosObject2 );
+
+
+				var geometryUrano = new THREE.SphereGeometry( 1.5, 32, 32 );
+				uranoObject = new THREE.Mesh(geometryUrano, urano);
+				uranoObject.position.x = 12;
+				uranoObject.position.y = 0;
+				uranoObject.position.z = 0;
+				scene.add(uranoObject);
+
+				var geometryNeptuno = new THREE.SphereGeometry( 1.5, 32, 32 );
+				neptunoObject = new THREE.Mesh(geometryNeptuno, neptuno);
+				neptunoObject.position.x = 12;
+				neptunoObject.position.y = 0;
+				neptunoObject.position.z = 0;
+				scene.add(neptunoObject);
+
 				sunLabel.position.set( 0, 0, 0 );
 				mercuryLabel.position.set( 0, 0, 0 );
 				venusLabel.position.set( 0, 0, 0 );
@@ -210,8 +284,8 @@
 
 				for ( let i = 0; i < 300; i ++ ) {
 					var tam= Math.random()*0.2;
-					var tam2= Math.random() * (32 -16) + 16;
-					var tam3= Math.random() * (12 -6) + 6;
+					var tam2= Math.random() * (5 -3) + 3;
+					var tam3= Math.random() * (5 -3) + 3;
 
 					const meteoros = new THREE.SphereGeometry( tam, tam2, tam3 );
 					const texturamdom = Math.floor(Math.random() * meteoritos.length);
@@ -305,6 +379,24 @@
 				marsObject.position.x =  -(10.8*Math.sin(renderer.info.render.frame * 0.004));
 				marsObject.position.z =  -(10.8*Math.cos(renderer.info.render.frame * 0.004));
 
+				jupiterObject.position.x =  -(24.8*Math.sin(renderer.info.render.frame * 0.003));
+				jupiterObject.position.z =  -(24.8*Math.cos(renderer.info.render.frame * 0.003));
+
+				saturnoObject.position.x =  -(34.8*Math.sin(renderer.info.render.frame * 0.004));
+				saturnoObject.position.z =  -(34.8*Math.cos(renderer.info.render.frame * 0.004));
+
+				anillosObject.position.x =  -(34.8*Math.sin(renderer.info.render.frame * 0.004));
+				anillosObject.position.z =  -(34.8*Math.cos(renderer.info.render.frame * 0.004));
+
+				anillosObject2.position.x =  -(34.8*Math.sin(renderer.info.render.frame * 0.004));
+				anillosObject2.position.z =  -(34.8*Math.cos(renderer.info.render.frame * 0.004));
+
+				uranoObject.position.x =  38.8*Math.sin(renderer.info.render.frame * 0.004);
+				uranoObject.position.z =  38.8*Math.cos(renderer.info.render.frame * 0.004);
+
+				neptunoObject.position.x =  44.8*Math.sin(renderer.info.render.frame * 0.001);
+				neptunoObject.position.z =  44.8*Math.cos(renderer.info.render.frame * 0.001);
+
 				group.rotateY(0.001);
 				
 				updateLight();
@@ -331,6 +423,14 @@
 								INTERSECTED.remove( moonLabel );
 							if(INTERSECTED == marsObject)
 								INTERSECTED.remove( marsLabel );
+							if(INTERSECTED == jupiterObject)
+								INTERSECTED.remove( jupiterLabel );
+							if(INTERSECTED == saturnoObject)
+								INTERSECTED.remove( saturnoLabel );
+							if(INTERSECTED == uranoObject)
+								INTERSECTED.remove( uranoLabel );
+							if(INTERSECTED == neptunoObject)
+								INTERSECTED.remove( neptunoLabel );
 						}
 							
 						
@@ -347,6 +447,14 @@
 							INTERSECTED.add( moonLabel );
 						if(INTERSECTED == marsObject)
 							INTERSECTED.add( marsLabel );
+						if(INTERSECTED == jupiterObject)
+							INTERSECTED.add( jupiterLabel );
+						if(INTERSECTED == saturnoObject)
+							INTERSECTED.add( saturnoLabel );
+						if(INTERSECTED == uranoObject)
+							INTERSECTED.add( uranoLabel );
+						if(INTERSECTED == neptunoObject)
+							INTERSECTED.add( neptunoLabel );
 					}
 
 				}
@@ -365,6 +473,14 @@
 							INTERSECTED.remove( moonLabel );
 						if(INTERSECTED == marsObject)
 							INTERSECTED.remove( marsLabel );
+						if(INTERSECTED == jupiterObject)
+							INTERSECTED.remove( jupiterLabel );
+						if(INTERSECTED == saturnoObject)
+							INTERSECTED.remove( saturnoLabel );
+						if(INTERSECTED == uranoObject)
+							INTERSECTED.remove( uranoLabel );
+						if(INTERSECTED == neptunoObject)
+							INTERSECTED.remove( neptunoLabel );
 					}
 					
 					INTERSECTED = null;
